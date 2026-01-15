@@ -38,3 +38,23 @@ RakthSetu connects *donors, hospitals, and NGOs* on a single platform to provide
 - 🛠️ Admin / NGO panel  
 
 ---
+
+## 👥 Team
+- **Aryaman** – Backend (APIs, DB, Prisma)  
+- **Manvi** – Frontend (UI, Dashboards)  
+- **Arnav** – DevOps & Testing (Docker, CI/CD)  
+
+---
+
+## 🎓 Context
+Built as part of **Kalvium – Simulated Work (AP)**  
+Sprint #1: *Full-Stack Development with Next.js & Cloud*
+
+---
+
+## 🌱 Vision
+To ensure **no life is lost due to missing or delayed blood availability data**.
+
+---
+
+🚧 *Project under active development*
