@@ -20,3 +20,21 @@ RakthSetu connects *donors, hospitals, and NGOs* on a single platform to provide
 - 🔐 Secure role-based access  
 
 ---
+
+## 🧠 Tech Stack
+- ⚛️ **Next.js** – Frontend + Backend (API Routes)  
+- 🗄️ **PostgreSQL** – Relational database  
+- 🔗 **Prisma** – Type-safe ORM  
+- 🐳 **Docker** – Containerization  
+- ☁️ **AWS / Azure** – Cloud deployment  
+
+---
+
+## 🎯 MVP Features
+- 👤 Role-based authentication  
+- 🩸 Blood inventory dashboard  
+- 🚨 Emergency request system  
+- 📍 Nearby donor discovery  
+- 🛠️ Admin / NGO panel  
+
+---
