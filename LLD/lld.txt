@@ -1,0 +1,23 @@
+RaktSetu – Low-Level Design (LLD)
+Sprint #1 | Next.js Full-Stack Project (Kalvium)
+
+Figma LLD Link:
+https://www.figma.com/design/qyYByT7D2OVzCvCKJ3FGV4/Untitled?node-id=0-1&t=07ftHOA0P3RoKjNO-1   
+
+Access Permissions:
+Anyone with the link can view
+
+Description:
+This Figma file contains the complete Low-Level Design (LLD) for the RaktSetu platform, including:
+- Frontend component hierarchy (Next.js App Router)
+- Backend API routes and service-level logic
+- PostgreSQL database schema with Prisma models
+- Redis caching strategy (keys, TTL, invalidation)
+- Error handling and validation flow
+- AWS/Azure cloud infrastructure mapping
+
+File Naming Convention:
+Triad_S84_LLD_NextJS
+
+Note:
+Replace the placeholder Figma link above with your actual shared Figma URL before final submission.
