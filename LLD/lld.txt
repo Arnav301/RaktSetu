@@ -15,9 +15,3 @@ This Figma file contains the complete Low-Level Design (LLD) for the RaktSetu pl
 - Redis caching strategy (keys, TTL, invalidation)
 - Error handling and validation flow
 - AWS/Azure cloud infrastructure mapping
-
-File Naming Convention:
-Triad_S84_LLD_NextJS
-
-Note:
-Replace the placeholder Figma link above with your actual shared Figma URL before final submission.
