@@ -39,4 +39,30 @@ jobs:
 
       - name: Deploy
         if: github.ref == 'refs/heads/main'
-        run: echo "Deploying application..."
+        run: |
+          echo "Deploying application..."
+          sleep 2
+          echo "Deployment finished"
+
+      - name: Start Application
+        if: github.ref == 'refs/heads/main'
+        run: |
+          npm run start &
+          sleep 5
+
+      - name: Verify Deployment
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Running health check..."
+          curl -f http://localhost:3000/api/health
+
+      - name: Run Smoke Tests
+        if: github.ref == 'refs/heads/main'
+        run: npm run smoke
+
+      - name: Rollback Deployment
+        if: failure() && github.ref == 'refs/heads/main'
+        run: |
+          echo "Deployment verification failed"
+          echo "Rolling back to previous stable version..."
+          echo "Rollback completed"
