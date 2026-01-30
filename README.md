@@ -165,3 +165,15 @@ Passwords are never stored in plain text. We hash passwords using bcrypt so even
 
 ### Maintainability reflection
 Keeping validation + auth logic consistent (Zod + global response handler + clear status codes) makes it easier for a team to extend endpoints without breaking API behavior.
+
+## Deployment Verification & Rollback
+
+- Health check endpoint: /api/health
+- CI verifies deployment using curl
+- Smoke tests using Jest
+- Automatic rollback on failure
+
+Metrics Impact:
+- MTTD reduced by immediate health checks
+- MTTR reduced by rollback automation
+- CFR reduced by blocking bad deployments
