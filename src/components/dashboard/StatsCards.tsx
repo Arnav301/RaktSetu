@@ -1,3 +1,6 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 type Stat = {
   title: string;
   value: string;
@@ -33,22 +36,68 @@ const stats: Stat[] = [
 ];
 
 export default function StatsCards() {
+  const router = useRouter();
+
   return (
-    <div className="grid md:grid-cols-4 gap-6 mb-6">
-      {stats.map((stat) => (
-        <div
-          key={stat.title}
-          className="bg-white p-6 rounded-xl shadow-sm border"
-        >
-          <p className="text-gray-500 text-sm">{stat.title}</p>
-          <h2 className="text-3xl font-bold mt-2">{stat.value}</h2>
-          <p
-            className={`mt-2 text-sm font-medium ${stat.positive ? "text-green-600" : "text-red-500"}`}
-          >
-            {stat.change}
+    <div className="flex flex-col gap-6">
+      {/* Overview Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Overview</h2>
+          <p className="text-gray-500 text-sm">
+            Monitor blood inventory and requests
           </p>
         </div>
-      ))}
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+          <button
+            onClick={() => router.push("/requests/new")}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+          >
+            ➕ New Request
+          </button>
+
+          <button
+            onClick={() => router.push("/donors/register")}
+            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+          >
+            👤 Register Donor
+          </button>
+
+          <button
+            onClick={() => router.push("/inventory")}
+            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+          >
+            🔍 Find Blood
+          </button>
+
+          <button
+            onClick={() => router.push("/alerts/send")}
+            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+          >
+            🔔 Send Alert
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid md:grid-cols-4 gap-6">
+        {stats.map((stat) => (
+          <div
+            key={stat.title}
+            className="bg-white p-6 rounded-xl shadow-sm border"
+          >
+            <p className="text-gray-500 text-sm">{stat.title}</p>
+            <h2 className="text-3xl font-bold mt-2">{stat.value}</h2>
+            <p
+              className={`mt-2 text-sm font-medium ${stat.positive ? "text-green-600" : "text-red-500"}`}
+            >
+              {stat.change}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

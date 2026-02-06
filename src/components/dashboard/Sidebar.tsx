@@ -9,6 +9,7 @@ import {
   Settings,
 } from "lucide-react";
 import { ReactNode } from "react";
+import Image from "next/image";
 
 interface SidebarItemProps {
   icon: ReactNode;
@@ -18,9 +19,20 @@ interface SidebarItemProps {
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-white border-r p-5 flex flex-col justify-between">
+    <aside className="w-64 h-screen sticky top-0 bg-white border-r p-5 flex flex-col justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-red-600 mb-8">RaktSetu</h1>
+        <div className="flex items-center gap-3 mb-8 px-1">
+          <Image
+            src="/blood-donate.png"
+            alt="RaktSetu Logo"
+            width={36}
+            height={36}
+            className="object-contain"
+          />
+          <h1 className="text-2xl font-bold text-red-600 tracking-wide">
+            RaktSetu
+          </h1>
+        </div>
 
         <nav className="space-y-2">
           <SidebarItem

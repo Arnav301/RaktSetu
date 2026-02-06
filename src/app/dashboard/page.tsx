@@ -1,6 +1,7 @@
 import Topbar from "@/components/dashboard/Topbar";
 import StatsCards from "@/components/dashboard/StatsCards";
 import BloodInventory from "@/components/dashboard/BloodInventory";
+import DashboardDetails from "@/components/dashboard/DashboardDetails";
 
 export default function DashboardPage() {
   return (
@@ -9,6 +10,7 @@ export default function DashboardPage() {
         <Topbar />
         <StatsCards />
         <BloodInventory />
+        <DashboardDetails />
       </div>
     </div>
   );
