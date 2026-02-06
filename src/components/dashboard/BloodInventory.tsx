@@ -2,7 +2,7 @@ interface BloodCardProps {
   type: string;
   stock: number;
   total: number;
-  status: string;
+  status: "Good" | "Adequate" | "Low" | "Critical";
 }
 
 export default function BloodInventory() {
@@ -34,6 +34,7 @@ export default function BloodInventory() {
 function BloodCard({ type, stock, total, status }: BloodCardProps) {
   const percent = (stock / total) * 100;
 
+  // Badge color
   const statusColor =
     status === "Good"
       ? "bg-green-100 text-green-600"
@@ -43,20 +44,30 @@ function BloodCard({ type, stock, total, status }: BloodCardProps) {
           ? "bg-red-100 text-red-600"
           : "bg-blue-100 text-blue-600";
 
+  const progressColor =
+    status === "Good"
+      ? "bg-green-500"
+      : status === "Low"
+        ? "bg-yellow-500"
+        : status === "Critical"
+          ? "bg-red-500"
+          : "bg-blue-500";
+
   return (
     <div className="border p-4 rounded-lg">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="text-lg font-bold">{type}</h4>
+        <h4 className="text-lg font-bold text-gray-800">{type}</h4>
+
         <span className={`text-xs px-2 py-1 rounded-full ${statusColor}`}>
           {status}
         </span>
       </div>
 
-      <div className="w-full bg-gray-200 h-2 rounded-full mb-2">
+      <div className="w-full bg-gray-200 h-2 rounded-full mb-2 overflow-hidden">
         <div
-          className="bg-red-500 h-2 rounded-full"
+          className={`${progressColor} h-2 rounded-full transition-all duration-500`}
           style={{ width: `${percent}%` }}
-        ></div>
+        />
       </div>
 
       <p className="text-sm text-gray-600">
