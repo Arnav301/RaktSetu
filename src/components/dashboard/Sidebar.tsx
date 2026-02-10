@@ -10,13 +10,15 @@ import {
   Megaphone,
   Settings,
 } from "lucide-react";
+import Link from "next/link";
 import { ReactNode } from "react";
 import Image from "next/image";
 
 interface SidebarItemProps {
   icon: ReactNode;
   label: string;
-  path: string;
+  href: string;
+  active?: boolean;
 }
 
 export default function Sidebar() {
@@ -40,27 +42,28 @@ export default function Sidebar() {
           <SidebarItem
             icon={<LayoutDashboard size={18} />}
             label="Dashboard"
-            path="/dashboard"
+            href="/dashboard"
+            active
           />
           <SidebarItem
             icon={<Droplet size={18} />}
             label="Blood Inventory"
-            path="/dashboard/inventory"
+            href="/inventory"
           />
           <SidebarItem
             icon={<Users size={18} />}
             label="Donors"
-            path="/dashboard/donors"
+            href="/users"
           />
           <SidebarItem
             icon={<FileText size={18} />}
             label="Requests"
-            path="/dashboard/requests"
+            href="/requests"
           />
           <SidebarItem
             icon={<Calendar size={18} />}
             label="Appointments"
-            path="/dashboard/appointments"
+            href="/appointments"
           />
 
           <p className="text-xs text-gray-400 mt-6 mb-2">Management</p>
@@ -68,17 +71,17 @@ export default function Sidebar() {
           <SidebarItem
             icon={<Building2 size={18} />}
             label="Blood Banks"
-            path="/blood-banks"
+            href="/blood-banks"
           />
           <SidebarItem
             icon={<Megaphone size={18} />}
             label="Campaigns"
-            path="/campaigns"
+            href="/campaigns"
           />
           <SidebarItem
             icon={<Settings size={18} />}
             label="Settings"
-            path="/settings"
+            href="/settings"
           />
         </nav>
       </div>
@@ -96,15 +99,10 @@ export default function Sidebar() {
   );
 }
 
-function SidebarItem({ icon, label, path }: SidebarItemProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const active = pathname === path;
-
+function SidebarItem({ icon, label, href, active = false }: SidebarItemProps) {
   return (
-    <div
-      onClick={() => router.push(path)}
+    <Link
+      href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition ${
         active
           ? "bg-red-50 text-red-600 font-semibold"
@@ -113,6 +111,6 @@ function SidebarItem({ icon, label, path }: SidebarItemProps) {
     >
       {icon}
       {label}
-    </div>
+    </Link>
   );
 }
