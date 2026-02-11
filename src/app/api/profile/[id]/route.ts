@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { handleError } from "@/lib/errorHandler";
 
 function parseId(value: string) {
@@ -18,9 +18,13 @@ export async function GET(
     if (!userId)
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId },
-    });
+    const { data: profile, error } = await supabase
+      .from("Profile")
+      .select("*")
+      .eq("userId", userId)
+      .maybeSingle();
+
+    if (error) throw error;
 
     if (!profile)
       return NextResponse.json(

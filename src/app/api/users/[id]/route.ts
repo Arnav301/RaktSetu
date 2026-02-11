@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { updateUserSchema } from "@/lib/schemas/userSchema";
@@ -22,10 +22,13 @@ export async function GET(
     if (!id)
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
 
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: { id: true, name: true, email: true },
-    });
+    const { data: user, error } = await supabase
+      .from("User")
+      .select("id, name, email")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw error;
 
     if (!user)
       return NextResponse.json(
@@ -69,18 +72,24 @@ export async function PUT(
         ? parsed.data.email.trim()
         : undefined;
 
-    const existing = await prisma.user.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const { data: existing, error: findError } = await supabase
+      .from("User")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (findError) throw findError;
     if (!existing)
       return sendError("Resource not found", ERROR_CODES.NOT_FOUND, 404);
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data: { ...(name ? { name } : {}), ...(email ? { email } : {}) },
-      select: { id: true, name: true, email: true },
-    });
+    const { data: updated, error: updateError } = await supabase
+      .from("User")
+      .update({ ...(name ? { name } : {}), ...(email ? { email } : {}) })
+      .eq("id", id)
+      .select("id, name, email")
+      .single();
+
+    if (updateError) throw updateError;
 
     return sendSuccess(updated);
   } catch (err) {
@@ -106,17 +115,26 @@ export async function DELETE(
     if (!id)
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
 
-    const existing = await prisma.user.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const { data: existing, error: findError } = await supabase
+      .from("User")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (findError) throw findError;
+
     if (!existing)
       return NextResponse.json(
         { message: "Resource not found" },
         { status: 404 }
       );
 
-    await prisma.user.delete({ where: { id } });
+    const { error: deleteError } = await supabase
+      .from("User")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return handleError(error, "DELETE /api/users/[id]");

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { sendSuccess, sendError } from "@/lib/responseHandler";
 import { handleError } from "@/lib/errorHandler";
 import { headers } from "next/headers";
@@ -11,18 +11,13 @@ export async function GET() {
       return sendError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        bloodGroup: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    const { data: user, error } = await supabase
+      .from("User")
+      .select("id, name, email, phone, bloodGroup, role, createdAt")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) throw error;
 
     if (!user) {
       return sendError("User not found", "NOT_FOUND", 404);
@@ -49,13 +44,17 @@ export async function PUT(req: Request) {
       bloodGroup?: string;
     };
 
-    const data: { name?: string; phone?: string; bloodGroup?: string } = {};
+    const data: {
+      name?: string;
+      phone?: string | null;
+      bloodGroup?: string | null;
+    } = {};
 
     if (name && typeof name === "string" && name.trim()) {
       data.name = name.trim();
     }
     if (typeof phone === "string") {
-      data.phone = phone.trim() || (null as unknown as string);
+      data.phone = phone.trim() || null;
     }
     if (typeof bloodGroup === "string") {
       const validGroups = [
@@ -72,26 +71,21 @@ export async function PUT(req: Request) {
       if (!validGroups.includes(bloodGroup)) {
         return sendError("Invalid blood group", "VALIDATION_ERROR", 400);
       }
-      data.bloodGroup = bloodGroup || (null as unknown as string);
+      data.bloodGroup = bloodGroup || null;
     }
 
     if (Object.keys(data).length === 0) {
       return sendError("No fields to update", "VALIDATION_ERROR", 400);
     }
 
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        bloodGroup: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    const { data: updated, error } = await supabase
+      .from("User")
+      .update(data)
+      .eq("id", userId)
+      .select("id, name, email, phone, bloodGroup, role, createdAt")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(updated, "Profile updated");
   } catch (error) {

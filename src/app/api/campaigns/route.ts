@@ -1,20 +1,15 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { sendSuccess } from "@/lib/responseHandler";
 import { handleError } from "@/lib/errorHandler";
 
 export async function GET() {
   try {
-    const campaigns = await prisma.campaign.findMany({
-      orderBy: { date: "asc" },
-      select: {
-        id: true,
-        title: true,
-        date: true,
-        location: true,
-        organizer: true,
-        createdAt: true,
-      },
-    });
+    const { data: campaigns, error } = await supabase
+      .from("Campaign")
+      .select("id, title, date, location, organizer, createdAt")
+      .order("date", { ascending: true });
+
+    if (error) throw error;
 
     return sendSuccess(campaigns);
   } catch (error) {

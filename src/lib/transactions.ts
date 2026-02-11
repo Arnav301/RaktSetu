@@ -1,32 +1,32 @@
-import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export async function createUserWithProfile() {
   try {
-    const result = await prisma.$transaction(
-      async (tx: Prisma.TransactionClient) => {
-        const user = await tx.user.create({
-          data: {
-            name: "Test Donor",
-            email: "donor@raktsetu.com",
-            password: "hashed_test_password",
-          },
-        });
+    // Note: This is not transactional in the same way as Prisma.
+    // Supabase via client library does not support multi-statement transactions natively without RPC.
 
-        await tx.profile.create({
-          data: {
-            userId: user.id,
-            bio: "",
-          },
-        });
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .insert({
+        name: "Test Donor",
+        email: "donor@raktsetu.com",
+        password: "hashed_test_password",
+      })
+      .select()
+      .single();
 
-        return user;
-      }
-    );
+    if (userError) throw userError;
 
-    return result;
+    const { error: profileError } = await supabase.from("Profile").insert({
+      userId: user.id,
+      bio: "",
+    });
+
+    if (profileError) throw profileError;
+
+    return user;
   } catch (error) {
-    console.error("Transaction failed. Rolled back.", error);
+    console.error("Operation failed.", error);
     throw error;
   }
 }

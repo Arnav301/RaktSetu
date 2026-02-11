@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { createUserSchema } from "@/lib/schemas/userSchema";
@@ -8,10 +8,12 @@ import { handleError } from "@/lib/errorHandler";
 export async function GET() {
   try {
     // Authorization handled by middleware
-    const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true },
-      orderBy: { id: "asc" },
-    });
+    const { data: users, error } = await supabase
+      .from("User")
+      .select("id, name, email")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
 
     return sendSuccess(users);
   } catch (error) {
@@ -45,10 +47,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const created = await prisma.user.create({
-      data: { name, email, password },
-      select: { id: true, name: true, email: true },
-    });
+    const { data: created, error } = await supabase
+      .from("User")
+      .insert({ name, email, password })
+      .select("id, name, email")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Success", 201);
   } catch (err) {

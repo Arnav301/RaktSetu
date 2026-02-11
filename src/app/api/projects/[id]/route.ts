@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { handleError } from "@/lib/errorHandler";
 
 function parseId(value: string) {
@@ -18,7 +18,14 @@ export async function GET(
     if (!id)
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const { data: project, error } = await supabase
+      .from("Project")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw error;
+
     if (!project)
       return NextResponse.json(
         { message: "Resource not found" },
@@ -41,17 +48,27 @@ export async function DELETE(
     if (!id)
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
 
-    const existing = await prisma.project.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const { data: existing, error: findError } = await supabase
+      .from("Project")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (findError) throw findError;
+
     if (!existing)
       return NextResponse.json(
         { message: "Resource not found" },
         { status: 404 }
       );
 
-    await prisma.project.delete({ where: { id } });
+    const { error: deleteError } = await supabase
+      .from("Project")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
+
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return handleError(error, "DELETE /api/projects/[id]");

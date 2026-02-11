@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { createProfileSchema } from "@/lib/schemas/profileSchema";
@@ -36,23 +36,35 @@ export async function POST(req: Request) {
 
     const bio = parsed.data.bio;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
+    const { data: user, error: findUserError } = await supabase
+      .from("User")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (findUserError) throw findUserError;
     if (!user)
       return sendError("Resource not found", ERROR_CODES.NOT_FOUND, 404);
 
-    const existingProfile = await prisma.profile.findUnique({
-      where: { userId },
-    });
+    const { data: existingProfile, error: findProfileError } = await supabase
+      .from("Profile")
+      .select("id")
+      .eq("userId", userId)
+      .maybeSingle();
+
+    if (findProfileError) throw findProfileError;
+
     if (existingProfile) {
       return sendError("Invalid input", ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
-    const created = await prisma.profile.create({
-      data: { userId, bio },
-    });
+    const { data: created, error } = await supabase
+      .from("Profile")
+      .insert({ userId, bio })
+      .select("*")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Success", 201);
   } catch (err) {

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { sendSuccess, sendError } from "@/lib/responseHandler";
 import { handleError } from "@/lib/errorHandler";
 import { ERROR_CODES } from "@/lib/errorCodes";
@@ -12,18 +12,13 @@ export async function GET() {
       return sendError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const appointments = await prisma.appointment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        date: true,
-        time: true,
-        location: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+    const { data: appointments, error } = await supabase
+      .from("Appointment")
+      .select("id, date, time, location, status, createdAt")
+      .eq("userId", userId)
+      .order("createdAt", { ascending: false });
+
+    if (error) throw error;
 
     return sendSuccess(appointments);
   } catch (error) {
@@ -54,22 +49,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const created = await prisma.appointment.create({
-      data: {
+    const { data: created, error } = await supabase
+      .from("Appointment")
+      .insert({
         userId,
         date,
         time,
         location,
-      },
-      select: {
-        id: true,
-        date: true,
-        time: true,
-        location: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+      })
+      .select("id, date, time, location, status, createdAt")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Appointment booked", 201);
   } catch (error) {

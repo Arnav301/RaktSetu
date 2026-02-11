@@ -1,7 +1,7 @@
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { loginSchema } from "@/lib/schemas/authSchema";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { handleError } from "@/lib/errorHandler";
@@ -10,6 +10,7 @@ export async function POST(req: Request) {
   try {
     const body: unknown = await req.json();
     const parsed = loginSchema.safeParse(body);
+
     if (!parsed.success) {
       return sendError(
         "Invalid input",
@@ -22,10 +23,14 @@ export async function POST(req: Request) {
     const email = parsed.data.email.trim();
     const password = parsed.data.password;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, email: true, password: true, role: true },
-    });
+    // 🔥 FIXED: table name + removed role
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, email, password")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (error) throw error;
 
     if (!user) {
       return sendError("User not found", ERROR_CODES.NOT_FOUND, 404);
@@ -44,22 +49,19 @@ export async function POST(req: Request) {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email }, // 🔥 removed role
       secret,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "1h" }
     );
 
     const response = sendSuccess({ token });
 
-    // Set JWT as a cookie server-side (source of truth for auth)
     response.cookies.set("token", token, {
-      httpOnly: false,
+      httpOnly: true, // 🔥 should be true for security
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 3600, // 1 hour — matches JWT expiresIn
+      maxAge: 3600,
     });
 
     return response;

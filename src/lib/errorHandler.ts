@@ -15,10 +15,36 @@ export function handleError(
   const isDevelopment = process.env.NODE_ENV === "development";
 
   // Extract error details
-  const errorMessage =
-    error instanceof Error ? error.message : "An unexpected error occurred";
-  const errorStack = error instanceof Error ? error.stack : undefined;
-  const errorName = error instanceof Error ? error.name : "UnknownError";
+  let errorMessage = "An unexpected error occurred";
+  let errorName = "UnknownError";
+  let errorStack = undefined;
+  let rawError = error;
+
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    errorName = error.name;
+    errorStack = error.stack;
+  } else if (typeof error === "object" && error !== null) {
+    // Handle Supabase/Postgrest errors or other object errors
+    const errObj = error as Record<string, unknown>;
+    if (typeof errObj.message === "string") {
+      errorMessage = errObj.message;
+    }
+    if (typeof errObj.code === "string") {
+      errorName = errObj.code; // Use error code as name if available (common in DB errors)
+    }
+    if (typeof errObj.details === "string") {
+      errorMessage += ` (${errObj.details})`;
+    }
+    // Try to stringify the whole object for logging
+    try {
+      rawError = JSON.stringify(error);
+    } catch {
+      rawError = String(error);
+    }
+  } else if (typeof error === "string") {
+    errorMessage = error;
+  }
 
   // Prepare context for logging
   const logContext: Record<string, unknown> =
@@ -29,7 +55,7 @@ export function handleError(
     ...logContext,
     errorName,
     stack: errorStack,
-    error: error instanceof Error ? error.toString() : String(error),
+    error: rawError,
   });
 
   // Return response based on environment

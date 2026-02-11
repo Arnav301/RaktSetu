@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { sendSuccess, sendError } from "@/lib/responseHandler";
 import { handleError } from "@/lib/errorHandler";
 import { ERROR_CODES } from "@/lib/errorCodes";
@@ -12,19 +12,13 @@ export async function GET() {
       return sendError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const requests = await prisma.bloodRequest.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        bloodGroup: true,
-        quantity: true,
-        urgency: true,
-        note: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+    const { data: requests, error } = await supabase
+      .from("BloodRequest")
+      .select("id, bloodGroup, quantity, urgency, note, status, createdAt")
+      .eq("userId", userId)
+      .order("createdAt", { ascending: false });
+
+    if (error) throw error;
 
     return sendSuccess(requests);
   } catch (error) {
@@ -73,24 +67,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const created = await prisma.bloodRequest.create({
-      data: {
+    const { data: created, error } = await supabase
+      .from("BloodRequest")
+      .insert({
         userId,
         bloodGroup,
         quantity,
         urgency: urgency || "Normal",
         note: note || null,
-      },
-      select: {
-        id: true,
-        bloodGroup: true,
-        quantity: true,
-        urgency: true,
-        note: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+      })
+      .select("id, bloodGroup, quantity, urgency, note, status, createdAt")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Blood request created", 201);
   } catch (error) {

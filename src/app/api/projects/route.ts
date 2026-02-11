@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { createProjectSchema } from "@/lib/schemas/projectSchema";
@@ -7,9 +7,12 @@ import { handleError } from "@/lib/errorHandler";
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({
-      orderBy: { id: "asc" },
-    });
+    const { data: projects, error } = await supabase
+      .from("Project")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
 
     return sendSuccess(projects);
   } catch (error) {
@@ -48,16 +51,23 @@ export async function POST(req: Request) {
 
     const title = parsed.data.title;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
+    const { data: user, error: findError } = await supabase
+      .from("User")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (findError) throw findError;
     if (!user)
       return sendError("Resource not found", ERROR_CODES.NOT_FOUND, 404);
 
-    const created = await prisma.project.create({
-      data: { title, userId },
-    });
+    const { data: created, error } = await supabase
+      .from("Project")
+      .insert({ title, userId })
+      .select("*")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Success", 201);
   } catch (err) {

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { ERROR_CODES } from "@/lib/errorCodes";
 import { sendError, sendSuccess } from "@/lib/responseHandler";
 import { signupSchema } from "@/lib/schemas/authSchema";
@@ -19,14 +19,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const name = parsed.data.name.trim();
     const email = parsed.data.email.trim();
     const password = parsed.data.password;
 
-    const existing = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
+    const { data: existing, error: findError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (findError) throw findError;
+
     if (existing) {
       return sendError(
         "User already exists",
@@ -37,14 +40,16 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const created = await prisma.user.create({
-      data: {
-        name,
+    const { data: created, error } = await supabase
+      .from("users")
+      .insert({
         email,
         password: hashedPassword,
-      },
-      select: { id: true, name: true, email: true },
-    });
+      })
+      .select("id,email")
+      .single();
+
+    if (error) throw error;
 
     return sendSuccess(created, "Success", 201);
   } catch (error) {
